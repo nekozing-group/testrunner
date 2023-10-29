@@ -1,8 +1,9 @@
 import sys
-import subprocess
 import os
 import logging
+import json
 from testrunner.core import TestRunner
+from testrunner.models import TestRunnerResult
 
 log = logging.getLogger(__name__)
 
@@ -16,11 +17,15 @@ if __name__ == "__main__":
     session_id = sys.argv[1]
     input_file_path = sys.argv[2] # the file to execute. this requires mount to be at the same path
     problem_id = sys.argv[3]
-    print(session_id, input_file_path, problem_id)
+    print('received input params: session_id: %s, input_file_path: %s, problem_id: %s' % (session_id, input_file_path, problem_id))
 
     if not os.path.isfile(input_file_path):
         print(f'could not get code to run: {input_file_path}')
+        print(f'os.path.isdir("/input"): {os.path.isdir("/input")}')
+        print([f for f in os.listdir('/input')])
         sys.exit(1)
 
     test_runner = TestRunner(session_id, problem_id, input_file_path)
-    test_runner.run_tests()
+    result: TestRunnerResult = test_runner.run_tests()
+    print('----')
+    print(result.model_dump_json())
