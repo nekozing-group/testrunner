@@ -1,8 +1,8 @@
 FROM python:3.11.6-alpine3.18
 
-RUN pip install pydantic
+RUN pip install -r requirement.txt
 
-COPY . /testrunner
+COPY . /code
 
-RUN chmod +x /testrunner/entrypoint.py
-ENTRYPOINT ["python", "/testrunner/entrypoint.py"]
+RUN chmod +x /code/entrypoint.py
+ENTRYPOINT ["python", "/code/entrypoint.py"]

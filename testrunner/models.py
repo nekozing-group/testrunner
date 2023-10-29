@@ -7,7 +7,7 @@ class SingleTestRunResult(BaseModel):
     actual_output: Any
     expected_output: Any
 
-class TestResult(BaseModel):
+class TestRunnerResult(BaseModel):
     session_id: str
     test_outputs: List[SingleTestRunResult]
     num_total_tests: int
