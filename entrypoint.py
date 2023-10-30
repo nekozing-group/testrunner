@@ -1,9 +1,7 @@
 import sys
-import os
 import logging
-import json
 from testrunner.core import TestRunner
-from testrunner.models import TestRunnerResult
+from testrunner.models import TestRunnerResult, JobResult, JobError
 
 log = logging.getLogger(__name__)
 
@@ -19,13 +17,19 @@ if __name__ == "__main__":
     problem_id = sys.argv[3]
     print('received input params: session_id: %s, input_file_path: %s, problem_id: %s' % (session_id, input_file_path, problem_id))
 
-    if not os.path.isfile(input_file_path):
-        print(f'could not get code to run: {input_file_path}')
-        print(f'os.path.isdir("/input"): {os.path.isdir("/input")}')
-        print([f for f in os.listdir('/input')])
-        sys.exit(1)
+    job_result = JobResult(session_id=session_id)
 
-    test_runner = TestRunner(session_id, problem_id, input_file_path)
-    result: TestRunnerResult = test_runner.run_tests()
+    try:
+        # if not os.path.isfile(input_file_path):
+        #     print(f'could not get code to run: {input_file_path}')
+        #     print(f'os.path.isdir("/input"): {os.path.isdir("/input")}')
+        #     raise FileExistsError('could not get code to run: {input_file_path}')
+        test_runner = TestRunner(session_id, problem_id, input_file_path)    
+        result: TestRunnerResult = test_runner.run_tests()
+        job_result.result = result
+    except Exception as e:
+        job_error = JobError(error_type=type(e).__name__, message=str(e))
+        job_result.error = JobError
+    
     print('----')
-    print(result.model_dump_json())
+    print(job_result.model_dump_json())
