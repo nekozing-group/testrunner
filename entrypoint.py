@@ -29,7 +29,8 @@ if __name__ == "__main__":
         job_result.result = result
     except Exception as e:
         job_error = JobError(error_type=type(e).__name__, message=str(e))
-        job_result.error = JobError
+        job_result.error = job_error
     
+    print(job_result)
     print('----')
     print(job_result.model_dump_json())
