@@ -21,7 +21,7 @@ class TestRunner:
         loc = {}
         self.state = TestRunnerState.BYTE_CODE
         exec(byte_code, allowed, loc)
-        self.loc = loc
+        self.loc = loc | allowed # TODO verify this is correct
         self.state = TestRunnerState.READY
         
     def load_test_cases(self):
