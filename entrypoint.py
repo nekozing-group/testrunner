@@ -1,20 +1,22 @@
 import sys
 import logging
 from testrunner.core import TestRunner
-from shared.models import TestRunnerResult, JobResult, JobError
+from shared.models import TestRunnerResult, JobResult, JobError, TestRunnerState
 
 log = logging.getLogger(__name__)
 
 
 def run_job(session_id, input_file_path, problem_id) -> JobResult:
     job_result = JobResult(session_id=session_id)
-
+    test_runner = None
     try:
-        test_runner = TestRunner(session_id, problem_id, input_file_path)    
-        result: TestRunnerResult = test_runner.run_tests()
-        job_result.test_results = result
+        test_runner = TestRunner(session_id, problem_id, input_file_path)
+        test_runner.init()
+        test_result: TestRunnerResult = test_runner.run_tests()
+        job_result.test_results = test_result
     except Exception as e:
-        job_error = JobError(error_type=type(e).__name__, message=str(e))
+        state = test_runner.state if test_runner is not None else TestRunnerState.UNKNOWN
+        job_error = JobError(error_type=type(e).__name__, message=str(e), testrunner_state=state)
         job_result.error = job_error
 
     return job_result

@@ -2,19 +2,27 @@ import tomllib
 from importlib.resources import files
 from RestrictedPython import compile_restricted
 from .python_policy import allowed
-from shared.models import TestRunnerResult, SingleTestRunResult
+from shared.models import TestRunnerResult, SingleTestRunResult, TestRunnerState
 
 class TestRunner:
     def __init__(self, session_id: str, problem_id: str, input_file_path: str):
+        self.state = TestRunnerState.INIT
         self.session_id = session_id
         self.problem_id = problem_id
         self.input_file_path = input_file_path
-        with open(input_file_path) as file:
+
+    # explicit init for state tracking
+    def init(self):
+        self.state = TestRunnerState.LOAD
+        with open(self.input_file_path) as file:
             source = file.read()
+        self.state = TestRunnerState.COMPILE
         byte_code = compile_restricted(source, '<inline>', 'exec')
         loc = {}
+        self.state = TestRunnerState.BYTE_CODE
         exec(byte_code, allowed, loc)
         self.loc = loc
+        self.state = TestRunnerState.READY
         
     def load_test_cases(self):
         problem_id = self.problem_id
@@ -22,9 +30,13 @@ class TestRunner:
         return tomllib.loads(toml_str)
 
     def run_tests(self) -> TestRunnerResult:
+        if (self.state != TestRunnerState.READY):
+            raise ValueError(f'Invalid TestRunner state: {self.state}. TestRunner must be in READY state')
+        self.state = TestRunnerState.LOAD_TESTCASE
         test_cases = self.load_test_cases()['testcases']
         num_pass = 0
         outputs = []
+        self.state = TestRunnerState.RUN_TESTS
         for single_test_case in test_cases:
             input, expected_output = single_test_case['input'], single_test_case['expected_output']
             test_output = self.run_single_test(input, expected_output)
@@ -32,6 +44,7 @@ class TestRunner:
                 num_pass += 1
             outputs.append(test_output)
             
+        self.state = TestRunnerState.COMPLETE
         return TestRunnerResult(
             session_id=self.session_id,
             test_outputs=outputs,
