@@ -5,6 +5,20 @@ from shared.models import TestRunnerResult, JobResult, JobError
 
 log = logging.getLogger(__name__)
 
+
+def run_job(session_id, input_file_path, problem_id) -> JobResult:
+    job_result = JobResult(session_id=session_id)
+
+    try:
+        test_runner = TestRunner(session_id, problem_id, input_file_path)    
+        result: TestRunnerResult = test_runner.run_tests()
+        job_result.test_results = result
+    except Exception as e:
+        job_error = JobError(error_type=type(e).__name__, message=str(e))
+        job_result.error = job_error
+
+    return job_result
+
 if __name__ == "__main__":
     # Check if both arguments are provided
     if len(sys.argv) != 4:
@@ -17,20 +31,7 @@ if __name__ == "__main__":
     problem_id = sys.argv[3]
     print('received input params: session_id: %s, input_file_path: %s, problem_id: %s' % (session_id, input_file_path, problem_id))
 
-    job_result = JobResult(session_id=session_id)
-
-    try:
-        # if not os.path.isfile(input_file_path):
-        #     print(f'could not get code to run: {input_file_path}')
-        #     print(f'os.path.isdir("/input"): {os.path.isdir("/input")}')
-        #     raise FileExistsError('could not get code to run: {input_file_path}')
-        test_runner = TestRunner(session_id, problem_id, input_file_path)    
-        result: TestRunnerResult = test_runner.run_tests()
-        job_result.result = result
-    except Exception as e:
-        job_error = JobError(error_type=type(e).__name__, message=str(e))
-        job_result.error = job_error
+    job_result = run_job(session_id, input_file_path, problem_id)
     
-    print(job_result)
     print('----')
     print(job_result.model_dump_json())
