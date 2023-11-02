@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.11,<3.12"
 pydantic = "^2.4.2"
 restrictedpython = "^6.2"
+shared = { path = "../shared", develop = true }
 
 
 [tool.poetry.group.dev.dependencies]

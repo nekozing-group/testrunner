@@ -1,7 +1,7 @@
 import sys
 import logging
 from testrunner.core import TestRunner
-from testrunner.models import TestRunnerResult, JobResult, JobError
+from shared.models import TestRunnerResult, JobResult, JobError
 
 log = logging.getLogger(__name__)
 

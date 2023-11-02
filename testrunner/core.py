@@ -2,7 +2,7 @@ import tomllib
 from importlib.resources import files
 from RestrictedPython import compile_restricted
 from .python_policy import allowed
-from .models import TestRunnerResult, SingleTestRunResult
+from shared.models import TestRunnerResult, SingleTestRunResult
 
 class TestRunner:
     def __init__(self, session_id: str, problem_id: str, input_file_path: str):
@@ -18,7 +18,7 @@ class TestRunner:
         
     def load_test_cases(self):
         problem_id = self.problem_id
-        toml_str = files('testrunner.data').joinpath(f'{problem_id}.toml').read_text()
+        toml_str = files('shared.data').joinpath(f'{problem_id}.toml').read_text()
         return tomllib.loads(toml_str)
 
     def run_tests(self) -> TestRunnerResult:
@@ -42,17 +42,19 @@ class TestRunner:
     def run_single_test(self, input, expected_output) -> SingleTestRunResult:
         actual_output = None
         test_pass = False
+        error_message = None
         if self.problem_id in self.loc:
             try:
                 actual_output = self.loc[self.problem_id](input)
                 test_pass = actual_output == expected_output
             except Exception as e:
-                actual_output = f'{type(e).__name__} - {str(e)}'
+                error_message = f'{type(e).__name__} - {str(e)}'
         else:
             actual_output = f'function {self.problem_id} not defined in code'
 
         return SingleTestRunResult(
             test_pass=test_pass,
+            error_message=error_message,
             input=input,
             expected_output=expected_output,
             actual_output=actual_output

@@ -1,5 +1,5 @@
 from testrunner.core import TestRunner
-from testrunner.models import TestRunnerResult
+from shared.models import TestRunnerResult
 from importlib.resources import files
 import pytest
 
@@ -26,4 +26,5 @@ def test_runtime_error():
     result: TestRunnerResult = tr.run_tests()
     assert result.num_total_tests == 4
     assert result.num_tests_passed == 0
-    assert result.test_outputs[0].actual_output == 'IndexError - list index out of range'
+    assert result.test_outputs[0].actual_output is None
+    assert result.test_outputs[0].error_message == 'IndexError - list index out of range'
